@@ -1,12 +1,6 @@
 ---
 # Getting Started
 
-
-## Locally
-To start the application locally, follow these steps:
-
-1. Install the required packages:
-
 ```
 pip install -r requirements.txt
 ```
