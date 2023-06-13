@@ -3,6 +3,7 @@ import io
 import pandas as pd
 import numpy as np
 import easyocr
+import re
 from fuzzywuzzy import fuzz
 
 from typing import Optional
@@ -102,6 +103,10 @@ def get_model_predict(model: YOLO, input_image: Image, save: bool = False, image
 
 
 ################################# BBOX Func #####################################
+def isnumber(string):
+    pattern = r"\d"
+    match = re.search(pattern,string)
+    return match is not None
 
 def add_bboxs_on_img(image: Image, predict: pd.DataFrame()) -> Image:
     font_path = "THSarabunNew.ttf" # Replace "path_to_font.ttf" with the actual path to your font file
@@ -117,24 +122,32 @@ def add_bboxs_on_img(image: Image, predict: pd.DataFrame()) -> Image:
     cropped_image = image.crop((left, top, right, bottom))
     # Doing OCR. Get bounding boxes.
     np_image = np.array(cropped_image)
-    bounds = reader.readtext(np_image,allowlist=" กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮเแะัํี๊้็่๋ิืุูึใไำ๑๒๓๔๕๖๗๘๙0123456789")
+    bounds = reader.readtext(np_image)
     country=""
     number = ''
-    if(len(bounds) == 0):
-        print("")
-    else:
-        for i, x in enumerate(bounds):
-            if i < len(bounds) - 1:
-                number += x[1].strip()
-        place_names = ['กรุงเทพมหานคร', 'กระบี่', 'กาญจนบุรี', 'กาฬสินธุ์', 'กำแพงเพชร', 'ขอนแก่น', 'จันทบุรี', 'ฉะเชิงเทรา', 'ชลบุรี', 'ชัยนาท', 'ชัยภูมิ', 'ชุมพร', 'เชียงราย', 'เชียงใหม่', 'ตรัง', 'ตราด', 'ตาก', 'นครนายก', 'นครปฐม', 'นครพนม', 'นครราชสีมา', 'นครศรีธรรมราช', 'นครสวรรค์', 'นนทบุรี', 'นราธิวาส', 'น่าน', 'บึงกาฬ', 'บุรีรัมย์', 'ปทุมธานี', 'ประจวบคีรีขันธ์', 'ปราจีนบุรี', 'ปัตตานี', 'พระนครศรีอยุธยา', 'พังงา', 'พัทลุง', 'พิจิตร', 'พิษณุโลก', 'เพชรบุรี', 'เพชรบูรณ์', 'แพร่', 'ภูเก็ต', 'มหาสารคาม', 'มุกดาหาร', 'แม่ฮ่องสอน', 'ยโสธร', 'ยะลา', 'ร้อยเอ็ด', 'ระนอง', 'ระยอง', 'ราชบุรี', 'ลพบุรี', 'ลำปาง', 'ลำพูน', 'เลย', 'ศรีสะเกษ', 'สกลนคร', 'สงขลา', 'สตูล', 'สมุทรปราการ', 'สมุทรสงคราม', 'สมุทรสาคร', 'สระแก้ว', 'สระบุรี', 'สิงห์บุรี', 'สุโขทัย', 'สุพรรณบุรี', 'สุราษฎร์ธานี', 'สุรินทร์', 'หนองคาย', 'หนองบัวลำภู', 'อ่างทอง', 'อุดรธานี', 'อุทัยธานี', 'อุตรดิตถ์', 'อุบลราชธานี', 'อำนาจเจริญ'
+    print("test")
+    print(bounds)
+    print(len(bounds))
+    for i, x in enumerate(bounds):
+        print(i)
+        if (i+1) != len(bounds):
+            print(x[1])
+            number += x[1]
+        elif (i+1) == len(bounds) and isnumber(x[1]):
+            print(x[1])
+            number += x[1]
+        elif (i+1) == len(bounds) and isnumber(x[1]) == False:
+            place_names = ['กรุงเทพมหานคร', 'กระบี่', 'กาญจนบุรี', 'กาฬสินธุ์', 'กำแพงเพชร', 'ขอนแก่น', 'จันทบุรี', 'ฉะเชิงเทรา', 'ชลบุรี', 'ชัยนาท', 'ชัยภูมิ', 'ชุมพร', 'เชียงราย', 'เชียงใหม่', 'ตรัง', 'ตราด', 'ตาก', 'นครนายก', 'นครปฐม', 'นครพนม', 'นครราชสีมา', 'นครศรีธรรมราช', 'นครสวรรค์', 'นนทบุรี', 'นราธิวาส', 'น่าน', 'บึงกาฬ', 'บุรีรัมย์', 'ปทุมธานี', 'ประจวบคีรีขันธ์', 'ปราจีนบุรี', 'ปัตตานี', 'พระนครศรีอยุธยา', 'พังงา', 'พัทลุง', 'พิจิตร', 'พิษณุโลก', 'เพชรบุรี', 'เพชรบูรณ์', 'แพร่', 'ภูเก็ต', 'มหาสารคาม', 'มุกดาหาร', 'แม่ฮ่องสอน', 'ยโสธร', 'ยะลา', 'ร้อยเอ็ด', 'ระนอง', 'ระยอง', 'ราชบุรี', 'ลพบุรี', 'ลำปาง', 'ลำพูน', 'เลย', 'ศรีสะเกษ', 'สกลนคร', 'สงขลา', 'สตูล', 'สมุทรปราการ', 'สมุทรสงคราม', 'สมุทรสาคร', 'สระแก้ว', 'สระบุรี', 'สิงห์บุรี', 'สุโขทัย', 'สุพรรณบุรี', 'สุราษฎร์ธานี', 'สุรินทร์', 'หนองคาย', 'หนองบัวลำภู', 'อ่างทอง', 'อุดรธานี', 'อุทัยธานี', 'อุตรดิตถ์', 'อุบลราชธานี', 'อำนาจเจริญ'
 ]
-        try:
-            search_term = bounds[1][1].strip()
-            best_match = max(place_names, key=lambda name: fuzz.ratio(name.lower(), search_term.lower()))
-            country = best_match
-        except Exception as e:
-            print(e)
-        print(number+" "+country)
+            try:
+                search_term = x[1].strip()
+                best_match = max(place_names, key=lambda name: fuzz.ratio(name.lower(), search_term.lower()))
+                country = best_match
+            except Exception as e:
+                print(e)
+
+    print(number+"asd ")
+    print("Add Pro: "+number+" "+country)
 
     for _, row in predict.iterrows():
         # Create the text to be displayed on the image
@@ -173,28 +186,32 @@ def return_bboxs_on_img(image: Image, predict: pd.DataFrame()) -> Image:
     cropped_image = image.crop((left, top, right, bottom))
     # Doing OCR. Get bounding boxes.
     np_image = np.array(cropped_image)
-    bounds = reader.readtext(np_image,allowlist=" กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮเแะัํี๊้็่๋ิืุูึใไำ๑๒๓๔๕๖๗๘๙0123456789")
+    bounds = reader.readtext(np_image)
     country=""
     number = ''
-    if(len(bounds) == 0):
-        print("")
-    else:
-        for i, x in enumerate(bounds):
-            if i < len(bounds) - 1:
-                print(x[1])
-                number += x[1]
-
-        place_names = ['กรุงเทพมหานคร', 'กระบี่', 'กาญจนบุรี', 'กาฬสินธุ์', 'กำแพงเพชร', 'ขอนแก่น', 'จันทบุรี', 'ฉะเชิงเทรา', 'ชลบุรี', 'ชัยนาท', 'ชัยภูมิ', 'ชุมพร', 'เชียงราย', 'เชียงใหม่', 'ตรัง', 'ตราด', 'ตาก', 'นครนายก', 'นครปฐม', 'นครพนม', 'นครราชสีมา', 'นครศรีธรรมราช', 'นครสวรรค์', 'นนทบุรี', 'นราธิวาส', 'น่าน', 'บึงกาฬ', 'บุรีรัมย์', 'ปทุมธานี', 'ประจวบคีรีขันธ์', 'ปราจีนบุรี', 'ปัตตานี', 'พระนครศรีอยุธยา', 'พังงา', 'พัทลุง', 'พิจิตร', 'พิษณุโลก', 'เพชรบุรี', 'เพชรบูรณ์', 'แพร่', 'ภูเก็ต', 'มหาสารคาม', 'มุกดาหาร', 'แม่ฮ่องสอน', 'ยโสธร', 'ยะลา', 'ร้อยเอ็ด', 'ระนอง', 'ระยอง', 'ราชบุรี', 'ลพบุรี', 'ลำปาง', 'ลำพูน', 'เลย', 'ศรีสะเกษ', 'สกลนคร', 'สงขลา', 'สตูล', 'สมุทรปราการ', 'สมุทรสงคราม', 'สมุทรสาคร', 'สระแก้ว', 'สระบุรี', 'สิงห์บุรี', 'สุโขทัย', 'สุพรรณบุรี', 'สุราษฎร์ธานี', 'สุรินทร์', 'หนองคาย', 'หนองบัวลำภู', 'อ่างทอง', 'อุดรธานี', 'อุทัยธานี', 'อุตรดิตถ์', 'อุบลราชธานี', 'อำนาจเจริญ'
+    print("test")
+    print(bounds)
+    print(len(bounds))
+    for i, x in enumerate(bounds):
+        print(i)
+        if (i+1) != len(bounds):
+            print(x[1])
+            number += x[1]
+        elif (i+1) == len(bounds) and isnumber(x[1]):
+            print(x[1])
+            number += x[1]
+        elif (i+1) == len(bounds) and isnumber(x[1]) == False:
+            place_names = ['กรุงเทพมหานคร', 'กระบี่', 'กาญจนบุรี', 'กาฬสินธุ์', 'กำแพงเพชร', 'ขอนแก่น', 'จันทบุรี', 'ฉะเชิงเทรา', 'ชลบุรี', 'ชัยนาท', 'ชัยภูมิ', 'ชุมพร', 'เชียงราย', 'เชียงใหม่', 'ตรัง', 'ตราด', 'ตาก', 'นครนายก', 'นครปฐม', 'นครพนม', 'นครราชสีมา', 'นครศรีธรรมราช', 'นครสวรรค์', 'นนทบุรี', 'นราธิวาส', 'น่าน', 'บึงกาฬ', 'บุรีรัมย์', 'ปทุมธานี', 'ประจวบคีรีขันธ์', 'ปราจีนบุรี', 'ปัตตานี', 'พระนครศรีอยุธยา', 'พังงา', 'พัทลุง', 'พิจิตร', 'พิษณุโลก', 'เพชรบุรี', 'เพชรบูรณ์', 'แพร่', 'ภูเก็ต', 'มหาสารคาม', 'มุกดาหาร', 'แม่ฮ่องสอน', 'ยโสธร', 'ยะลา', 'ร้อยเอ็ด', 'ระนอง', 'ระยอง', 'ราชบุรี', 'ลพบุรี', 'ลำปาง', 'ลำพูน', 'เลย', 'ศรีสะเกษ', 'สกลนคร', 'สงขลา', 'สตูล', 'สมุทรปราการ', 'สมุทรสงคราม', 'สมุทรสาคร', 'สระแก้ว', 'สระบุรี', 'สิงห์บุรี', 'สุโขทัย', 'สุพรรณบุรี', 'สุราษฎร์ธานี', 'สุรินทร์', 'หนองคาย', 'หนองบัวลำภู', 'อ่างทอง', 'อุดรธานี', 'อุทัยธานี', 'อุตรดิตถ์', 'อุบลราชธานี', 'อำนาจเจริญ'
 ]
-        try:
-            search_term = bounds[1][1].strip()
-            best_match = max(place_names, key=lambda name: fuzz.ratio(name.lower(), search_term.lower()))
-            country = best_match
-        except Exception as e:
-            print(e)
+            try:
+                search_term = x[1].strip()
+                best_match = max(place_names, key=lambda name: fuzz.ratio(name.lower(), search_term.lower()))
+                country = best_match
+            except Exception as e:
+                print(e)
 
-        print(number+"asd ")
-        print(number+" "+country)
+    print(number+"asd ")
+    print("Add Pro: "+number+" "+country)
     res =  [number,country,str(top),str(left),str(right),str(bottom)]
     return res
 
